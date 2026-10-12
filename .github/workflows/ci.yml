@@ -1,0 +1,58 @@
+name: CI
+
+"on":
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: campusfind_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d campusfind_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/campusfind_test
+      ALLOW_DESTRUCTIVE_POSTGRES_TESTS: YES
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22 and cache npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Pin npm version
+        run: npm install --global npm@10.9.2
+
+      - name: Install from lockfile
+        run: npm ci
+
+      - name: Lint and type-check
+        run: npm run lint
+
+      - name: Run unit and regression tests
+        run: npm test
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Run PostgreSQL 16 integration checks
+        run: npm run test:postgres-r1

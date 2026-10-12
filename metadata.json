@@ -1,0 +1,6 @@
+{
+  "name": "CampusFind",
+  "description": "Photo-Matched Lost & Found with transparent similarity scoring and privacy-first moderation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
